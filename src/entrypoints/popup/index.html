@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TinyHand</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header>
+      <img src="/icon/32.png" alt="" width="20" height="20" />
+      <h1>TinyHand</h1>
+      <input id="enabled" type="checkbox" role="switch" aria-label="Show the hand" />
+    </header>
+
+    <section aria-labelledby="hand-label">
+      <h2 id="hand-label">Hand</h2>
+      <div id="hands" class="hands" role="radiogroup" aria-labelledby="hand-label"></div>
+    </section>
+
+    <section class="rows">
+      <div class="row">
+        <span id="size-label">Size</span>
+        <div id="sizes" class="segmented" role="radiogroup" aria-labelledby="size-label">
+          <button type="button" role="radio" data-size="small">Small</button>
+          <button type="button" role="radio" data-size="medium">Medium</button>
+          <button type="button" role="radio" data-size="large">Large</button>
+        </div>
+      </div>
+      <label class="row">
+        <span>Tap sound</span>
+        <input id="sound" type="checkbox" role="switch" />
+      </label>
+    </section>
+
+    <section>
+      <button id="draw" type="button" class="primary">
+        <span id="draw-label">Start drawing</span>
+        <span id="draw-keys" class="keys"></span>
+      </button>
+      <p id="draw-help" class="help">Drag to draw. Ink fades after 3 seconds.</p>
+    </section>
+
+    <footer>
+      <div class="footer-head">
+        <h2>Shortcuts</h2>
+        <button id="change-shortcuts" type="button" class="link">Change</button>
+      </div>
+      <dl id="shortcuts"></dl>
+    </footer>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
