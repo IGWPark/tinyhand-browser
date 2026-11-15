@@ -3,7 +3,7 @@ import { defineConfig } from 'wxt';
 export default defineConfig({
   srcDir: 'src',
   manifest: {
-    name: 'TinyHand',
+    name: 'TinyHand for Browser',
     description: 'A tiny hand on a stick in place of your mouse pointer, on any website.',
     permissions: ['storage'],
     icons: {
@@ -18,7 +18,7 @@ export default defineConfig({
       { resources: ['hands/*.png', 'sounds/*.wav'], matches: ['<all_urls>'] },
     ],
     browser_specific_settings: {
-      gecko: { id: 'tinyhand@igwpark.github.io' },
+      gecko: { id: 'tinyhand-browser@igwpark.github.io' },
     },
   },
 });
