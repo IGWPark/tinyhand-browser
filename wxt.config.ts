@@ -14,9 +14,6 @@ export default defineConfig({
       128: 'icon/128.png',
     },
     action: { default_title: 'TinyHand' },
-    web_accessible_resources: [
-      { resources: ['hands/*.png', 'sounds/*.wav'], matches: ['<all_urls>'] },
-    ],
     browser_specific_settings: {
       gecko: { id: 'tinyhand-browser@igwpark.github.io' },
     },

@@ -23,7 +23,7 @@ export const INK_FADE_MS = 600;
 export function drawHand(
   ctx: CanvasRenderingContext2D,
   hand: Hand,
-  image: HTMLImageElement,
+  image: CanvasImageSource,
   tip: Point,
   grip: Point,
   height: number,

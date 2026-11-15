@@ -1,9 +1,11 @@
 import { browser } from 'wxt/browser';
-import { getHand, handImagePath } from '@/utils/hands';
+import type { HandImageRequest } from '../background';
+import { getHand } from '@/utils/hands';
 import { drawHand, drawStroke, strokeOpacity, type Point, type Stroke } from '@/utils/render';
 import { HAND_SCALE, settings, type Settings } from '@/utils/settings';
 import { createSound } from '@/utils/sound';
 import overlayStyles from './overlay.css?inline';
+import tapSound from '@/assets/tap.wav?inline';
 
 const PAGE_STYLES = `
   html[data-tinyhand], html[data-tinyhand] * { cursor: none !important; }
@@ -25,9 +27,9 @@ export default defineContentScript({
     const context = canvas.getContext('2d')!;
     const pageStyle = Object.assign(document.createElement('style'), { textContent: PAGE_STYLES });
 
-    const tap = createSound(browser.runtime.getURL('/sounds/tap.wav'));
+    const tap = createSound(tapSound);
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-    const images = new Map<string, HTMLImageElement>();
+    const images = new Map<string, ImageBitmap | 'loading'>();
 
     let width = 0;
     let height = 0;
@@ -42,15 +44,25 @@ export default defineContentScript({
     const strokes: Stroke[] = [];
     let needsFrame = true;
 
+    // Hand images arrive as bytes from the background script, so the page
+    // never loads an extension URL.
     function imageFor(id: string) {
-      let image = images.get(id);
-      if (!image) {
-        image = new Image();
-        image.onload = () => (needsFrame = true);
-        image.src = browser.runtime.getURL(handImagePath(id));
-        images.set(id, image);
-      }
-      return image;
+      const image = images.get(id);
+      if (image) return image === 'loading' ? undefined : image;
+      images.set(id, 'loading');
+      const request: HandImageRequest = { type: 'hand-image', handId: id };
+      browser.runtime
+        .sendMessage(request)
+        .then((base64: string) => {
+          const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+          return createImageBitmap(new Blob([bytes], { type: 'image/png' }));
+        })
+        .then((bitmap) => {
+          images.set(id, bitmap);
+          needsFrame = true;
+        })
+        .catch(() => images.delete(id));
+      return undefined;
     }
 
     function resize() {
@@ -194,7 +206,7 @@ export default defineContentScript({
     function renderHand(tip: Point, dt: number) {
       const hand = getHand(config.handId);
       const image = imageFor(hand.id);
-      if (!image.complete || !image.naturalWidth) return;
+      if (!image) return;
 
       // The stick is held from below the screen, a little to the right of the
       // pointer, and swings after it with a slight lag.

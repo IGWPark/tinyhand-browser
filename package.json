@@ -1,7 +1,7 @@
 {
   "name": "tinyhand-browser",
   "description": "A tiny hand on a stick in place of your mouse pointer, on any website.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "license": "MIT",
