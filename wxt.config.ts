@@ -5,7 +5,7 @@ export default defineConfig({
   manifest: {
     name: 'TinyHand',
     description: 'A tiny hand on a stick in place of your mouse pointer, on any website.',
-    permissions: ['storage', 'activeTab'],
+    permissions: ['storage'],
     icons: {
       16: 'icon/16.png',
       32: 'icon/32.png',
@@ -17,16 +17,6 @@ export default defineConfig({
     web_accessible_resources: [
       { resources: ['hands/*.png', 'sounds/*.wav'], matches: ['<all_urls>'] },
     ],
-    commands: {
-      'toggle-hand': {
-        suggested_key: { default: 'Alt+Shift+H' },
-        description: 'Show or hide the hand',
-      },
-      'toggle-drawing': {
-        suggested_key: { default: 'Alt+Shift+D' },
-        description: 'Start or stop drawing',
-      },
-    },
     browser_specific_settings: {
       gecko: { id: 'tinyhand@igwpark.github.io' },
     },

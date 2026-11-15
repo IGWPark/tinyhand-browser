@@ -1,8 +1,7 @@
 import { browser } from 'wxt/browser';
 import { getHand, handImagePath } from '@/utils/hands';
-import type { Message, TabState } from '@/utils/messages';
 import { drawHand, drawStroke, strokeOpacity, type Point, type Stroke } from '@/utils/render';
-import { HAND_SCALE, settings, updateSettings, type Settings } from '@/utils/settings';
+import { HAND_SCALE, settings, type Settings } from '@/utils/settings';
 import { createSound } from '@/utils/sound';
 import overlayStyles from './overlay.css?inline';
 
@@ -21,9 +20,8 @@ export default defineContentScript({
     // The overlay lives in a shadow root so page styles cannot reach it.
     const host = document.createElement('tinyhand-overlay');
     const shadow = host.attachShadow({ mode: 'closed' });
-    shadow.innerHTML = `<style>${overlayStyles}</style><canvas></canvas><div class="badge" role="status"></div>`;
+    shadow.innerHTML = `<style>${overlayStyles}</style><canvas></canvas>`;
     const canvas = shadow.querySelector('canvas')!;
-    const badge = shadow.querySelector<HTMLDivElement>('.badge')!;
     const context = canvas.getContext('2d')!;
     const pageStyle = Object.assign(document.createElement('style'), { textContent: PAGE_STYLES });
 
@@ -38,8 +36,9 @@ export default defineContentScript({
     let gripX: number | undefined;
     let press = 0;
     let pressed = false;
-    let drawing = false;
     let stroke: Stroke | undefined;
+    // True from an Alt+press until its click, so the page never sees that click.
+    let blockClick = false;
     const strokes: Stroke[] = [];
     let needsFrame = true;
 
@@ -67,28 +66,18 @@ export default defineContentScript({
     // overlay cannot be drawn on top.
     function apply() {
       const visible = config.enabled && !document.fullscreenElement;
-      if (!visible && drawing) setDrawing(false);
+      if (!visible) finishStroke();
       host.hidden = !visible;
-      if (visible) document.documentElement.dataset.tinyhand = drawing ? 'drawing' : 'on';
+      if (visible) document.documentElement.dataset.tinyhand = stroke ? 'drawing' : 'on';
       else delete document.documentElement.dataset.tinyhand;
       needsFrame = true;
     }
 
-    function setDrawing(next: boolean) {
-      if (next && !config.enabled) {
-        config = { ...config, enabled: true };
-        void updateSettings({ enabled: true });
-      }
-      drawing = next;
-      badge.textContent = drawing ? 'Drawing · Esc to stop' : '';
-      badge.classList.toggle('visible', drawing);
-      if (!drawing) finishStroke();
-      apply();
-    }
-
     function finishStroke() {
-      if (stroke) stroke.endedAt = performance.now();
+      if (!stroke) return;
+      stroke.endedAt = performance.now();
       stroke = undefined;
+      apply();
     }
 
     function isPointer(event: PointerEvent) {
@@ -120,16 +109,17 @@ export default defineContentScript({
         pressed = true;
         press = 1;
         if (config.sound) void tap.play();
-        if (drawing) {
+        if (event.altKey) {
           event.preventDefault();
           event.stopImmediatePropagation();
-          const hand = getHand(config.handId);
+          blockClick = true;
           stroke = {
             points: [{ x: event.clientX, y: event.clientY }],
-            color: hand.ink,
+            color: getHand(config.handId).ink,
             endedAt: 0,
           };
           strokes.push(stroke);
+          apply();
         }
         needsFrame = true;
       },
@@ -146,48 +136,32 @@ export default defineContentScript({
       { capture: true },
     );
 
-    // While drawing, the page should not react to the clicks that make the ink.
-    for (const type of ['click', 'dblclick', 'auxclick', 'contextmenu'] as const) {
+    // Alt+click on a link downloads it, so the click that ends a stroke is dropped.
+    for (const type of ['mousedown', 'mouseup', 'click'] as const) {
       ctx.addEventListener(
         window,
         type,
         (event) => {
-          if (drawing) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-          }
+          if (!blockClick) return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          if (type === 'click') blockClick = false;
         },
         { capture: true },
       );
     }
 
-    ctx.addEventListener(
-      window,
-      'keydown',
-      (event) => {
-        if (event.key !== 'Escape' || (!drawing && strokes.length === 0)) return;
-        event.stopImmediatePropagation();
-        strokes.length = 0;
-        setDrawing(false);
-      },
-      { capture: true },
-    );
-
-    ctx.addEventListener(window, 'blur', () => (pressed = false));
+    ctx.addEventListener(window, 'blur', () => {
+      pressed = false;
+      blockClick = false;
+      finishStroke();
+    });
     ctx.addEventListener(window, 'resize', resize);
     ctx.addEventListener(document, 'fullscreenchange', apply);
 
     settings.watch((next) => {
       config = next;
       apply();
-    });
-
-    browser.runtime.onMessage.addListener((message: Message): Promise<TabState> | undefined => {
-      if (message.type === 'toggle-drawing') setDrawing(!drawing);
-      if (message.type === 'get-state' || message.type === 'toggle-drawing') {
-        return Promise.resolve({ drawing });
-      }
-      return undefined;
     });
 
     // Rendering
