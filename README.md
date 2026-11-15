@@ -1,78 +1,48 @@
-# TinyHand for the browser
+# TinyHand for Browser
 
-A tiny hand on a stick in place of your mouse pointer, on any website.
+A tiny hand on a stick in place of your mouse pointer, on any website. Hold Alt and drag to draw
+on the page.
 
 This is a browser port of [TinyHand](https://github.com/nilbuild/tinyhand), the macOS app by
-[Kamran Ahmed](https://github.com/kamranahmedse). It brings the same hands to Chrome, Edge, Brave,
-Arc and Firefox on Windows, macOS and Linux. Useful for screen shares, recordings and demos, when
-people need to see what you are pointing at.
+[Kamran Ahmed](https://github.com/kamranahmedse). It works on Windows, macOS and Linux.
 
 <p align="center">
-  <img src="docs/drawing.png" width="720" alt="A lavender hand on a stick points at a button on a web page, with a purple line drawn under it and a 'Drawing · Esc to stop' badge at the top">
+  <img src="docs/demo.gif" width="720" alt="A hand on a stick moves over the Google home page, circles the search box and switches between several hand styles">
 </p>
 
 ## Install
 
-Not on the extension stores yet. Build it from source:
+Works in Chrome, Edge, Brave and Arc.
 
-```sh
-git clone https://github.com/IGWPark/tinyhand-extension.git
-cd tinyhand-extension
-pnpm install
-pnpm build            # Chrome, Edge, Brave, Arc
-pnpm build:firefox    # Firefox
-```
+**1. [Download TinyHand-Browser.zip](https://github.com/IGWPark/tinyhand-browser/releases/latest/download/TinyHand-Browser.zip)** and unzip it.
 
-**Chrome, Edge, Brave, Arc:** open `chrome://extensions` (`edge://extensions` in Edge), turn on
-**Developer mode**, click **Load unpacked** and pick `.output/chrome-mv3`.
+**2.** Open `chrome://extensions` (`edge://extensions` in Edge). Turn on **Developer mode**, click
+**Load unpacked** and choose the unzipped `TinyHand-Browser` folder. Chrome asks for Developer mode for
+extensions that are not from the Chrome Web Store.
 
-**Firefox:** open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on** and
-pick any file in `.output/firefox-mv2`.
+<img src="docs/install-chrome.png" width="600" alt="The Extensions page with the Developer mode switch and the Load unpacked button outlined">
 
-Reload tabs that were open before you installed.
+**3. Done.** TinyHand for Browser appears in the list. Refresh any tabs that were already open.
+
+<img src="docs/installed-chrome.png" width="600" alt="TinyHand for Browser in the Extensions list, with the reload button outlined">
+
+**To update**, download the zip again, replace the old folder with the new one and click the
+reload button on TinyHand for Browser.
 
 ## Use
 
-The hand follows your mouse and clicks work as usual. Click the toolbar icon to pick one of 36
-hands, change its size or mute the tap sound.
+The hand follows your mouse and clicks work as usual.
 
-| Action                         | Windows and Linux | macOS |
-| ------------------------------ | ----------------- | ----- |
-| Show or hide the hand          | `Alt+Shift+H`     | `⌥⇧H` |
-| Start or stop drawing          | `Alt+Shift+D`     | `⌥⇧D` |
-| Stop drawing and clear the ink | `Esc`             | `Esc` |
+- **Draw:** hold `Alt` (`⌥ Option` on macOS) and drag. Ink fades after 3 seconds.
+- **Settings:** click the TinyHand icon in the toolbar to pick a hand, change its size, mute the
+  tap sound or turn the hand off.
 
-While drawing, drag anywhere to draw. Ink fades after 3 seconds, and the page ignores your clicks
-until you stop. The popup shows your current shortcuts. Change them at
-`chrome://extensions/shortcuts`, or in Firefox under **Manage Extension Shortcuts** in
-`about:addons`.
-
-## Limitations
-
-- Browsers do not run extensions on their own pages (settings, new tab, web stores), so the
-  normal pointer shows there.
-- In fullscreen (video players, presentations) the normal pointer shows.
-- Over embedded frames, such as some video embeds and payment forms, the normal pointer shows and
-  the hand waits at the frame's edge.
-- Touch input has no pointer, so the hand only follows a mouse, trackpad or pen.
-
-## Development
-
-```sh
-pnpm dev              # opens Chrome with the extension and reloads on save
-pnpm dev:firefox
-pnpm check            # type check
-pnpm zip              # store-ready zip in .output
-```
-
-Built with [WXT](https://wxt.dev). The content script draws the hand on a canvas in a shadow root
-over the page, and hides the system pointer with one stylesheet rule. Hand geometry lives in
-[`src/utils/hands.ts`](src/utils/hands.ts).
+<img src="docs/popup.png" width="300" alt="The TinyHand popup with a grid of 36 hands, a size control and a tap sound switch">
 
 ## Acknowledgements
 
-- [TinyHand](https://github.com/nilbuild/tinyhand) by [Kamran Ahmed](https://github.com/kamranahmedse),
-  for the idea, the hand artwork, the tap sound and the hand-on-a-stick motion this port follows.
+[TinyHand](https://github.com/nilbuild/tinyhand) by [Kamran Ahmed](https://github.com/kamranahmedse),
+for the idea, the hand artwork, the tap sound and the hand-on-a-stick motion this port follows.
 
 ## License
 
